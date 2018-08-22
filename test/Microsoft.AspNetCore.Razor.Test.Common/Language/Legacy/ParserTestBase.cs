@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 #endif
         }
 
-        internal void AssertSyntaxTreeNodeMatchesBaseline(RazorSyntaxTree syntaxTree)
+        internal virtual void AssertSyntaxTreeNodeMatchesBaseline(RazorSyntaxTree syntaxTree)
         {
             AssertSyntaxTreeNodeMatchesBaseline(syntaxTree.Root, syntaxTree.Source.FilePath, syntaxTree.Diagnostics.ToArray());
         }
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             TagHelperSpanVerifier.Verify(root, filePath, tagHelperSpanBaseline);
         }
 
-        private static string SerializeDiagnostic(RazorDiagnostic diagnostic)
+        protected static string SerializeDiagnostic(RazorDiagnostic diagnostic)
         {
             var content = RazorDiagnosticSerializer.Serialize(diagnostic);
             var normalized = NormalizeNewLines(content);
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: true);
+            var source = TestRazorSourceDocument.Create(document, filePath: null, relativePath: null, normalizeNewLines: true);
 
             var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             codeParser.HtmlParser = markupParser;
             markupParser.CodeParser = codeParser;
 
-            markupParser.ParseDocument();
+            markupParser.ParseDocument1();
 
             var root = context.Builder.Build();
             var diagnostics = context.ErrorSink.Errors;
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: true);
+            var source = TestRazorSourceDocument.Create(document, filePath: null, relativePath: null, normalizeNewLines: true);
             var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
 
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 HtmlParser = parser,
             };
 
-            parser.ParseBlock();
+            parser.ParseBlock1();
 
             var root = context.Builder.Build();
             var diagnostics = context.ErrorSink.Errors;
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: true);
+            var source = TestRazorSourceDocument.Create(document, filePath: null, relativePath: null, normalizeNewLines: true);
             var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
 
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 CodeParser = parser,
             };
 
-            parser.ParseBlock();
+            parser.ParseBlock1();
 
             var root = context.Builder.Build();
             var diagnostics = context.ErrorSink.Errors;
@@ -764,7 +764,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Trace.WriteLine(string.Format(format, args));
         }
 
-        private static RazorParserOptions CreateParserOptions(
+        protected static RazorParserOptions CreateParserOptions(
             RazorLanguageVersion version, 
             IEnumerable<DirectiveDescriptor> directives, 
             bool designTime)
