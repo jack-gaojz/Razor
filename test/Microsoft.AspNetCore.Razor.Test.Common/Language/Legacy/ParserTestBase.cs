@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal virtual void AssertSyntaxTreeNodeMatchesBaseline(RazorSyntaxTree syntaxTree)
         {
-            AssertSyntaxTreeNodeMatchesBaseline(syntaxTree.Root, syntaxTree.Source.FilePath, syntaxTree.Diagnostics.ToArray());
+            AssertSyntaxTreeNodeMatchesBaseline(syntaxTree.LegacyRoot, syntaxTree.Source.FilePath, syntaxTree.Diagnostics.ToArray());
         }
 
         internal void AssertSyntaxTreeNodeMatchesBaseline(Block root, string filePath, params RazorDiagnostic[] diagnostics)
@@ -527,7 +527,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal static void EvaluateResults(RazorSyntaxTree result, Block expectedRoot, IList<RazorDiagnostic> expectedErrors)
         {
-            EvaluateParseTree(result.Root, expectedRoot);
+            EvaluateParseTree(result.LegacyRoot, expectedRoot);
             EvaluateRazorErrors(result.Diagnostics, expectedErrors);
         }
 
