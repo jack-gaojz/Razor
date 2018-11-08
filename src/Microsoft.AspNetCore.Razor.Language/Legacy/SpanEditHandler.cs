@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 
@@ -114,6 +115,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             else if (target is UnclassifiedTextLiteralSyntax)
             {
                 newTarget = Syntax.InternalSyntax.SyntaxFactory.UnclassifiedTextLiteral(builder.ToList()).CreateRed(target.Parent, target.Position);
+            }
+            else
+            {
+                Debug.Fail($"The type {target?.GetType().Name} is not a supported span node.");
             }
 
             var context = target.GetSpanContext();

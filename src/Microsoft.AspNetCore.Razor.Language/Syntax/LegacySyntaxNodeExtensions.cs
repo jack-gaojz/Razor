@@ -190,8 +190,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 throw new ArgumentNullException(nameof(node));
             }
 
-            var spanNodes = node.DescendantNodes().Where(n => n.IsSpanKind());
-            return spanNodes;
+            foreach (var child in node.DescendantNodes())
+            {
+                if (child.IsSpanKind())
+                {
+                    yield return child;
+                }
+            }
         }
 
         public static SyntaxNode PreviousSpan(this SyntaxNode node)
