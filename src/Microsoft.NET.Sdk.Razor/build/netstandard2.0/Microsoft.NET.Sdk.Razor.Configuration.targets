@@ -56,7 +56,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     Set the primary configuration supported by this SDK as the default configuration for Razor.
   -->
   <PropertyGroup Condition="'$(RazorDefaultConfiguration)'==''">
-    <RazorDefaultConfiguration Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'">MVC-2.1</RazorDefaultConfiguration>
+    <RazorDefaultConfiguration Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'">MVC-3.0</RazorDefaultConfiguration>
+    <RazorDefaultConfiguration Condition="'$(RazorDefaultConfiguration)'==''">MVC-2.1</RazorDefaultConfiguration>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_MvcRazorExtensionsAssembly>Microsoft.AspNetCore.Mvc.Razor.Extensions</_MvcRazorExtensionsAssembly>
+    <_MvcRazorExtensionsAssemblyFilePath>$(RazorSdkDirectoryRoot)extensions\mvc-2-1\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</_MvcRazorExtensionsAssemblyFilePath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -68,12 +74,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RazorConfiguration Include="MVC-2.1">
       <Extensions>MVC-2.1;$(CustomRazorExtension)</Extensions>
     </RazorConfiguration>
+
+    <RazorConfiguration Include="MVC-3.0">
+      <Extensions>MVC-3.0;$(CustomRazorExtension)</Extensions>
+      <DeclarationConfiguration>MVC-3.0-Declaration</DeclarationConfiguration>
+    </RazorConfiguration>
   </ItemGroup>
 
   <ItemGroup>
     <RazorExtension Include="MVC-2.1">
-      <AssemblyName>Microsoft.AspNetCore.Mvc.Razor.Extensions</AssemblyName>
-      <AssemblyFilePath>$(RazorSdkDirectoryRoot)extensions\mvc-2-1\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</AssemblyFilePath>
+      <AssemblyName>$(_MvcRazorExtensionsAssembly)</AssemblyName>
+      <AssemblyFilePath>$(_MvcRazorExtensionsAssemblyFilePath)</AssemblyFilePath>
+    </RazorExtension>
+
+    <RazorExtension Include="MVC-3.0">
+      <AssemblyName>$(_MvcRazorExtensionsAssembly)</AssemblyName>
+      <AssemblyFilePath>$(_MvcRazorExtensionsAssemblyFilePath)</AssemblyFilePath>
     </RazorExtension>
   </ItemGroup>
 

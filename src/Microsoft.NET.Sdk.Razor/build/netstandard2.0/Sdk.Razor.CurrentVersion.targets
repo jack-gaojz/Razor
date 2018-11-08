@@ -50,11 +50,22 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveTagHelperRazorGenerateInputs
     </PrepareForRazorGenerateDependsOn>
 
+    <PrepareForRazorComponentGenerateDependsOn>
+      ResolveRazorConfiguration;
+      ResolveRazorComponentInputs;
+      AssignRazorComponentTargetPaths;
+    </PrepareForRazorComponentGenerateDependsOn>
+
     <RazorGenerateDependsOn>
       PrepareForRazorGenerate;
       _CheckForMissingRazorCompiler;
       RazorCoreGenerate
     </RazorGenerateDependsOn>
+
+    <RazorComponentGenerateDependsOn>
+      PrepareForRazorComponentGenerate;
+      RazorComponentGenerateCore
+    </RazorComponentGenerateDependsOn>
   
     <PrepareForRazorCompileDependsOn>
       RazorGenerate;
@@ -80,6 +91,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(DebugSymbolsProjectOutputGroupDependsOn);
       _RazorAddDebugSymbolsProjectOutputGroupOutput
     </DebugSymbolsProjectOutputGroupDependsOn>
+
+    <CoreCompileDependsOn>
+      RazorComponentGenerate;
+      $(CoreCompileDependsOn)
+    </CoreCompileDependsOn>
 
     <PrepareForBuildDependsOn>
       $(PrepareForBuildDependsOn);
@@ -127,6 +143,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <!-- Output directory used for generated files -->
     <RazorGenerateIntermediateOutputPath Condition="'$(RazorGenerateIntermediateOutputPath)'==''">$(IntermediateOutputPath)Razor\</RazorGenerateIntermediateOutputPath>
+
+    <!-- Output directory used for generated declarations -->
+    <RazorComponentIntermediateOutputPath Condition="'$(RazorDeclarationsIntermediateOutputPath)'==''">$(IntermediateOutputPath)RazorComponent\</RazorComponentIntermediateOutputPath>
 
     <!--
       Use the suffix .Views when producing compiled view assemblies. This matches the requirements for Mvc's ViewsFeatureProvider.
@@ -246,6 +265,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- For projects targeting 3.x and later, use the compiler that ships in the Sdk -->
   <Import Project="Microsoft.NET.Sdk.Razor.CodeGeneration.targets" Condition="'$(_EnableAllInclusiveRazorSdk)' == 'true'" />
 
+  <Import Project="Microsoft.NET.Sdk.Razor.Component.targets" />
+
   <Import Project="Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
 
   <!-- 
@@ -258,7 +279,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="PrepareForRazorGenerate" DependsOnTargets="$(PrepareForRazorGenerateDependsOn)">
   </Target>
 
+  <Target Name="PrepareForRazorComponentGenerate" DependsOnTargets="$(PrepareForRazorComponentGenerateDependsOn)">
+  </Target>
+
   <Target Name="RazorGenerate" DependsOnTargets="$(RazorGenerateDependsOn)">
+  </Target>
+
+  <Target Name="RazorComponentGenerate" DependsOnTargets="$(RazorComponentGenerateDependsOn)">
   </Target>
 
   <Target Name="PrepareForRazorCompile" DependsOnTargets="$(PrepareForRazorCompileDependsOn)">
@@ -279,7 +306,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ResolvedRazorConfiguration Include="@(RazorConfiguration)" Condition="'%(RazorConfiguration.Identity)'=='$(RazorDefaultConfiguration)'" />
     </ItemGroup>
 
-    <FindInList List="@(RazorExtension)" ItemSpecToFind="@(RazorConfiguration->Metadata('Extensions'))">
+    <FindInList List="@(RazorExtension)" ItemSpecToFind="@(ResolvedRazorConfiguration->Metadata('Extensions'))">
       <Output TaskParameter="ItemFound" ItemName="ResolvedRazorExtension" />
     </FindInList>
   </Target>
@@ -363,6 +390,36 @@ Copyright (c) .NET Foundation. All rights reserved.
       '$(EnableDefaultRazorGenerateItems)'=='true'">
 
       <Content Condition="'%(Content.Extension)'=='.cshtml'" Pack="$(IncludeRazorContentInPack)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ResolveRazorComponentInputs">
+    <!--
+    Gathers input source files for Razor component generation. This is a separate target so that we can avoid
+    lots of work when there are no inputs for code generation.
+
+    NOTE: This target is called as part of an incremental build scenario in VS. Do not perform any work
+    outside of calculating RazorComponent items in this target.
+    -->
+
+    <ItemGroup Condition="'$(EnableDefaultRazorComponentItems)'=='true'">
+      <RazorComponent Include="@(Content)" Condition="'%(Content.Extension)'=='.razor'" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AssignRazorComponentTargetPaths" Condition="'@(RazorComponent)' != ''">
+    <AssignTargetPath Files="@(RazorComponent)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="RazorComponentWithTargetPath" />
+    </AssignTargetPath>
+
+    <ItemGroup>
+      <RazorComponentWithTargetPath Condition="'%(RazorComponentWithTargetPath.GeneratedOutput)' == ''">
+        <GeneratedOutput>$(RazorComponentIntermediateOutputPath)$([System.IO.Path]::ChangeExtension('%(RazorComponentWithTargetPath.TargetPath)', '$(RazorGenerateOutputFileExtension)'))</GeneratedOutput>
+      </RazorComponentWithTargetPath>
+
+      <RazorComponentWithTargetPath Condition="'%(RazorComponentWithTargetPath.GeneratedDeclaration)' == ''">
+        <GeneratedDeclaration>$(RazorComponentIntermediateOutputPath)$([System.IO.Path]::ChangeExtension('%(RazorComponentWithTargetPath.TargetPath)', '$(RazorGenerateOutputDefinitionFileExtension)'))</GeneratedDeclaration>
+      </RazorComponentWithTargetPath>
     </ItemGroup>
   </Target>
 
