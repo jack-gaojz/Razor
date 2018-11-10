@@ -39,6 +39,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void RazorMultilineCommentInBlock()
+        {
+            ParseDocumentTest(@"
+@{
+    @*
+This is a comment
+    *@
+}
+");
+        }
+
+        [Fact]
         public void RazorCommentInVerbatimBlock()
         {
             ParseDocumentTest("@{" + Environment.NewLine
